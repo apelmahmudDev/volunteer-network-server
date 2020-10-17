@@ -2,6 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const MongoClient = require('mongodb').MongoClient;
 const cors = require('cors');
+const ObjectId = require('mongodb').ObjectId;
 require('dotenv').config();
 
 const app = express();
@@ -18,12 +19,13 @@ client.connect(err => {
     const vOptionCollection = client.db(`${process.env.DB_NAME}`).collection("vOptions");
     const volunteerCollection = client.db(`${process.env.DB_NAME}`).collection("volunteer");
 
-    app.post('/addVoptions', (req, res) => {
-        const volunteerOptions = req.body;
-        vOptionCollection.insertMany(volunteerOptions)
+    // INSERT EVENT IN THE DATABASE
+    app.post('/addEvent', (req, res) => {
+        const event = req.body;
+        vOptionCollection.insertOne(event)
         .then(result => {
             res.send(result);
-            console.log('Data insted into database')
+            console.log('Data inserted successfully')
         })
     })
 
@@ -41,6 +43,7 @@ client.connect(err => {
         })
     })
 
+    // LOAD A MATCHING VOLUNTEER BY ID
     app.get('/volunteer/:id', (req, res) => {
         vOptionCollection.find({id: req.params.id})
         .toArray((error, documents) => {
@@ -48,11 +51,27 @@ client.connect(err => {
         })
     })
 
+    // GET SPEACIFIC VOLUNTEER
     app.get('/volunteer', (req, res) => {
         volunteerCollection.find({email: req.query.email})
         .toArray((error, documents) => {
             res.send(documents)
-            console.log('volunteer is came')
+        })
+    })
+
+    // LOAD VOLUNTEERS FOR ADMIN LIST
+    app.get('/volunteers', (req, res) => {
+        volunteerCollection.find({})
+        .toArray((error, documents) => {
+            res.send(documents);
+        })
+    })
+
+    // DELETE VOLUNTEER FROM ACTIVITIES AND ANDMIN LIST
+    app.delete('/deleteVolunteer/:id', (req, res) => {
+        volunteerCollection.deleteOne({_id: ObjectId(req.params.id)})
+        .then((result) => {
+            res.send(result.deletedCount > 0);
         })
     })
 
