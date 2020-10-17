@@ -14,21 +14,21 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
-
 client.connect(err => {
-    const vOptionCollection = client.db(`${process.env.DB_NAME}`).collection("vOptions");
+    const eventsCollection = client.db(`${process.env.DB_NAME}`).collection("vOptions");
     const volunteerCollection = client.db(`${process.env.DB_NAME}`).collection("volunteer");
 
     // INSERT EVENT IN THE DATABASE
     app.post('/addEvent', (req, res) => {
         const event = req.body;
-        vOptionCollection.insertOne(event)
+        eventsCollection.insertOne(event)
         .then(result => {
             res.send(result);
             console.log('Data inserted successfully')
         })
     })
 
+    // A VOLUNTEER ADDED AT THE COLLECTION
     app.post('/addVolunteer', (req, res) => {
         volunteerCollection.insertOne(req.body)
         .then(result => {
@@ -36,22 +36,23 @@ client.connect(err => {
         })
     })
 
+    // READ ALL EVENTS FROM DATABASE
     app.get('/loadVoptions', (req, res) => {
-        vOptionCollection.find({})
+        eventsCollection.find({})
         .toArray((error, documents) => {
             res.send(documents)
         })
     })
 
-    // LOAD A MATCHING VOLUNTEER BY ID
+    // LOAD A MATCHING VOLUNTEER INFO FROM DATABASE
     app.get('/volunteer/:id', (req, res) => {
-        vOptionCollection.find({id: req.params.id})
+        eventsCollection.find({id: req.params.id})
         .toArray((error, documents) => {
             res.send(documents[0])
         })
     })
 
-    // GET SPEACIFIC VOLUNTEER
+    // GET SPEACIFIC VOLUNTEER INFO BY EMAIL
     app.get('/volunteer', (req, res) => {
         volunteerCollection.find({email: req.query.email})
         .toArray((error, documents) => {
@@ -59,7 +60,7 @@ client.connect(err => {
         })
     })
 
-    // LOAD VOLUNTEERS FOR ADMIN LIST
+    // LOAD ALL VOLUNTEER FOR ADMIN LIST
     app.get('/volunteers', (req, res) => {
         volunteerCollection.find({})
         .toArray((error, documents) => {
@@ -67,7 +68,7 @@ client.connect(err => {
         })
     })
 
-    // DELETE VOLUNTEER FROM ACTIVITIES AND ANDMIN LIST
+    // DELETE A VOLUNTEER FROM DATABASE FOR ACTIVITIES AND ANDMIN LIST
     app.delete('/deleteVolunteer/:id', (req, res) => {
         volunteerCollection.deleteOne({_id: ObjectId(req.params.id)})
         .then((result) => {
@@ -79,7 +80,7 @@ client.connect(err => {
 
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
+  res.send('Hello volunteer network!')
   console.log('Backend server running!')
 })
 
