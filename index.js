@@ -84,6 +84,4 @@ app.get('/', (req, res) => {
   console.log('Backend server running!')
 })
 
-app.listen(process.env.DB_PORT, () => {
-  console.log(`app listening at http://localhost:${process.env.DB_PORT}`)
-})
+app.listen(process.env.PORT || process.env.DB_PORT);
